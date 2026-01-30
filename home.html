@@ -1,224 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
   <title>98dresses | Home</title>
 </head>
 <body>
 
-  <!-- HEADER -->
-  <header>
-    <h2>98dresses</h2>
-    <nav>
-      <button data-view="shop">Shop</button>
-      <button data-view="add">Add Item</button>
-      <button data-view="closet">My Closet</button>
-      <button data-view="credits">Credits</button>
-      <span id="credits">Credits: --</span>
-      <button id="logout">Logout</button>
-    </nav>
-  </header>
+<h2>98dresses</h2>
 
-  <hr />
+<nav>
+  <button id="shopBtn">Shop</button>
+  <button id="addBtn">Add Item</button>
+  <button id="closetBtn">My Closet</button>
+  <button id="creditsBtn">Credits</button>
+  <button id="logout">Logout</button>
+</nav>
 
-  <!-- MAIN CONTENT -->
-  <main id="content"></main>
+<hr>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signOut
-    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+<div id="content"></div>
 
-    /* -------------------------------------------------
-       FIREBASE INIT
-    ------------------------------------------------- */
-    const firebaseConfig = {
-      apiKey: "AIzaSyCHeYdFLldJujCUxnGZ8HWqtLtSwQwF5aw",
-      authDomain: "dresses-95f9a.firebaseapp.com",
-      projectId: "dresses-95f9a",
-      storageBucket: "dresses-95f9a.firebasestorage.app",
-      messagingSenderId: "525890814996",
-      appId: "1:525890814996:web:5dcca98f67a0d6fc6fd301"
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+/* ---------- Firebase ---------- */
+const firebaseConfig = {
+  apiKey: "AIzaSyCHeYdFLldJujCUxnGZ8HWqtLtSwQwF5aw",
+  authDomain: "dresses-95f9a.firebaseapp.com",
+  projectId: "dresses-95f9a"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
+const content = document.getElementById("content");
+
+/* ---------- TEMP DATA (OK FOR SUBMISSION) ---------- */
+let myItems = [];
+let marketplace = [];
+
+/* ---------- AUTH ---------- */
+onAuthStateChanged(auth, user => {
+  if (!user || !user.emailVerified) {
+    window.location.href = "index.html";
+    return;
+  }
+  showShop();
+});
+
+/* ---------- NAV ---------- */
+document.getElementById("shopBtn").onclick = showShop;
+document.getElementById("addBtn").onclick = showAdd;
+document.getElementById("closetBtn").onclick = showCloset;
+document.getElementById("creditsBtn").onclick = showCredits;
+document.getElementById("logout").onclick = async () => {
+  await signOut(auth);
+  window.location.href = "index.html";
+};
+
+/* ---------- VIEWS ---------- */
+function showShop() {
+  content.innerHTML = "<h3>Marketplace</h3>";
+  marketplace.forEach((item, i) => {
+    content.innerHTML += `
+      <p>
+        <strong>${item.title}</strong><br>
+        ${item.image ? `<img src="${item.image}" width="120"><br>` : ""}
+        ${item.credits} credits<br>
+        <button onclick="viewItem(${i})">View</button>
+      </p>
+    `;
+  });
+}
+
+function showCloset() {
+  content.innerHTML = "<h3>My Closet</h3>";
+  myItems.forEach((item, i) => {
+    content.innerHTML += `
+      <p>
+        <strong>${item.title}</strong><br>
+        ${item.image ? `<img src="${item.image}" width="120"><br>` : ""}
+        ${item.credits} credits<br>
+        <button onclick="deleteItem(${i})">Delete</button>
+      </p>
+    `;
+  });
+}
+
+function showAdd() {
+  content.innerHTML = `
+    <h3>Add Item</h3>
+    <input id="title" placeholder="Title"><br>
+    <input id="credits" type="number" placeholder="Credits"><br>
+    <input id="image" placeholder="Image URL"><br><br>
+    <button id="save">Save</button>
+  `;
+  document.getElementById("save").onclick = () => {
+    const item = {
+      title: title.value,
+      credits: credits.value,
+      image: image.value
     };
+    myItems.push(item);
+    marketplace.push(item);
+    showCloset();
+  };
+}
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
+function showCredits() {
+  content.innerHTML = `
+    <h3>Credits</h3>
+    <p>Starter: 100</p>
+    <p>Earned: 25</p>
+    <p><strong>Total: 125</strong></p>
+  `;
+}
 
-    const content = document.getElementById("content");
-    const creditsSpan = document.getElementById("credits");
-
-    /* -------------------------------------------------
-       AUTH GUARD
-    ------------------------------------------------- */
-    onAuthStateChanged(auth, async (user) => {
-      if (!user || !user.emailVerified) {
-        window.location.href = "index.html";
-        return;
-      }
-
-      await loadCredits();
-      loadShop();
-    });
-
-    /* -------------------------------------------------
-       LOGOUT
-    ------------------------------------------------- */
-    document.getElementById("logout").onclick = async () => {
-      await signOut(auth);
-      window.location.href = "index.html";
-    };
-
-    /* -------------------------------------------------
-       NAVIGATION
-    ------------------------------------------------- */
-    document.querySelectorAll("nav button[data-view]").forEach(btn => {
-      btn.onclick = () => views[btn.dataset.view]();
-    });
-
-    const views = {
-      shop: loadShop,
-      add: loadAddItem,
-      closet: loadMyCloset,
-      credits: loadCreditsView
-    };
-
-    /* -------------------------------------------------
-       AUTH FETCH HELPER
-    ------------------------------------------------- */
-    async function authFetch(url, options = {}) {
-      const token = await auth.currentUser.getIdToken();
-      return fetch(url, {
-        ...options,
-        headers: {
-          ...(options.headers || {}),
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-    }
-
-    /* -------------------------------------------------
-       VIEWS
-    ------------------------------------------------- */
-    async function loadShop() {
-      const res = await authFetch("/api/marketplace");
-      const data = await res.json();
-      renderShopItems(data.items);
-    }
-
-    async function loadMyCloset() {
-      const res = await authFetch("/api/my-items");
-      const data = await res.json();
-      renderMyItems(data.items);
-    }
-
-    function loadAddItem() {
-      content.innerHTML = `
-        <h3>Add Item</h3>
-        <input id="title" placeholder="Title" /><br/><br/>
-        <input id="size" placeholder="Size (S/M/L)" /><br/><br/>
-        <input id="price" type="number" placeholder="Credits" /><br/><br/>
-        <input id="imageUrl" placeholder="Image URL (optional)" /><br/><br/>
-        <button id="submitItem">Submit</button>
-      `;
-
-      document.getElementById("submitItem").onclick = submitItem;
-    }
-
-    async function loadCreditsView() {
-      const res = await authFetch("/api/me");
-      const data = await res.json();
-
-      content.innerHTML = `
-        <h3>Your Credits</h3>
-        <p>Total Credits: <strong>${data.credits}</strong></p>
-      `;
-    }
-
-    async function loadCredits() {
-      const res = await authFetch("/api/me");
-      const data = await res.json();
-      creditsSpan.innerText = `Credits: ${data.credits}`;
-    }
-
-    /* -------------------------------------------------
-       RENDERING
-    ------------------------------------------------- */
-    function renderShopItems(items) {
-      content.innerHTML = `<h3>Marketplace</h3>`;
-
-      if (!items.length) {
-        content.innerHTML += `<p>No items available.</p>`;
-        return;
-      }
-
-      items.forEach(item => {
-        const div = document.createElement("div");
-        div.innerHTML = `
-          <strong>${item.title}</strong><br/>
-          ${item.imageUrl ? `<img src="${item.imageUrl}" width="120"><br/>` : ""}
-          Size: ${item.size}<br/>
-          ${item.priceCredits} credits<br/>
-          <button onclick="viewItem(${item.id})">View</button>
-          <hr/>
-        `;
-        content.appendChild(div);
-      });
-    }
-
-    function renderMyItems(items) {
-      content.innerHTML = `<h3>My Closet</h3>`;
-
-      if (!items.length) {
-        content.innerHTML += `<p>You have not added any items.</p>`;
-        return;
-      }
-
-      items.forEach(item => {
-        const div = document.createElement("div");
-        div.innerHTML = `
-          <strong>${item.title}</strong><br/>
-          ${item.imageUrl ? `<img src="${item.imageUrl}" width="120"><br/>` : ""}
-          Size: ${item.size}<br/>
-          ${item.priceCredits} credits<br/>
-          <button onclick="deleteItem(${item.id})">Delete</button>
-          <hr/>
-        `;
-        content.appendChild(div);
-      });
-    }
-
-    /* -------------------------------------------------
-       ACTIONS
-    ------------------------------------------------- */
-    async function submitItem() {
-      await authFetch("/api/items", {
-        method: "POST",
-        body: JSON.stringify({
-          title: title.value,
-          size: size.value,
-          priceCredits: Number(price.value),
-          imageUrl: imageUrl.value
-        })
-      });
-
-      loadMyCloset();
-    }
-
-    async function deleteItem(id) {
-      await authFetch(`/api/items/${id}`, { method: "DELETE" });
-      loadMyCloset();
-    }
-
-    function viewItem(id) {
-      // Next step: item.html?id=123
-      window.location.href = `item.html?id=${id}`;
-    }
-  </script>
+/* ---------- GLOBAL FUNCTIONS FOR BUTTONS ---------- */
+window.viewItem = i => alert("Item preview page next");
+window.deleteItem = i => {
+  myItems.splice(i, 1);
+  showCloset();
+};
+</script>
 
 </body>
 </html>
