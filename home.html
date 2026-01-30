@@ -2,18 +2,38 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Home</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>98dresses | Home</title>
 </head>
 <body>
 
-  <h1>Home</h1>
-  <p>You are logged in.</p>
-  <button id="logout">Logout</button>
+  <!-- HEADER -->
+  <header>
+    <h2>98dresses</h2>
+    <nav>
+      <button data-view="shop">Shop</button>
+      <button data-view="add">Add Item</button>
+      <button data-view="closet">My Closet</button>
+      <button data-view="credits">Buttons</button>
+      <span id="credits">Credits: --</span>
+      <button id="logout">Logout</button>
+    </nav>
+  </header>
+
+  <hr />
+
+  <!-- MAIN CONTENT -->
+  <main id="content"></main>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signOut
+    } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
+    // 🔥 Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyCHeYdFLldJujCUxnGZ8HWqtLtSwQwF5aw",
       authDomain: "dresses-95f9a.firebaseapp.com",
@@ -26,10 +46,142 @@
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
+    const content = document.getElementById("content");
+    const creditsSpan = document.getElementById("credits");
+
+    // 🔐 Protect page
+    onAuthStateChanged(auth, async (user) => {
+      if (!user || !user.emailVerified) {
+        window.location.href = "index.html";
+        return;
+      }
+
+      await loadCredits();
+      loadShop(); // default view
+    });
+
+    // 🚪 Logout
     document.getElementById("logout").onclick = async () => {
       await signOut(auth);
       window.location.href = "index.html";
     };
+
+    // 🧭 Navigation
+    document.querySelectorAll("nav button[data-view]").forEach(btn => {
+      btn.onclick = () => views[btn.dataset.view]();
+    });
+
+    const views = {
+      shop: loadShop,
+      add: loadAddItem,
+      closet: loadMyCloset,
+      credits: loadCreditsView
+    };
+
+    // ---------------- VIEWS ----------------
+
+    async function loadShop() {
+      const token = await auth.currentUser.getIdToken();
+
+      const res = await fetch("http://localhost:3000/api/marketplace", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+      renderItems(data.items, "Marketplace");
+    }
+
+    async function loadMyCloset() {
+      const token = await auth.currentUser.getIdToken();
+
+      const res = await fetch("http://localhost:3000/api/my-items", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+      renderItems(data.items, "My Closet");
+    }
+
+    function loadAddItem() {
+      content.innerHTML = `
+        <h3>Add Item</h3>
+        <input id="title" placeholder="Title" /><br/><br/>
+        <input id="size" placeholder="Size (S/M/L)" /><br/><br/>
+        <input id="price" placeholder="Credits" type="number" /><br/><br/>
+        <button id="submitItem">Submit</button>
+      `;
+
+      document.getElementById("submitItem").onclick = submitItem;
+    }
+
+    async function loadCreditsView() {
+      const token = await auth.currentUser.getIdToken();
+
+      const res = await fetch("http://localhost:3000/api/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+
+      content.innerHTML = `
+        <h3>Your Buttons</h3>
+        <p>Starter Credits: ${data.starterCredits}</p>
+        <p>Earned Credits: ${data.earnedCredits}</p>
+      `;
+    }
+
+    // ---------------- HELPERS ----------------
+
+    async function submitItem() {
+      const token = await auth.currentUser.getIdToken();
+
+      await fetch("http://localhost:3000/api/items", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          title: title.value,
+          size: size.value,
+          priceCredits: Number(price.value)
+        })
+      });
+
+      loadMyCloset();
+    }
+
+    async function loadCredits() {
+      const token = await auth.currentUser.getIdToken();
+
+      const res = await fetch("http://localhost:3000/api/me", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+      creditsSpan.innerText =
+        `Credits: ${data.starterCredits + data.earnedCredits}`;
+    }
+
+    function renderItems(items, heading) {
+      content.innerHTML = `<h3>${heading}</h3>`;
+
+      if (!items.length) {
+        content.innerHTML += `<p>No items found.</p>`;
+        return;
+      }
+
+      items.forEach(item => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <strong>${item.title}</strong><br/>
+          Size: ${item.size}<br/>
+          ${item.priceCredits} buttons<br/>
+          <hr/>
+        `;
+        content.appendChild(div);
+      });
+    }
   </script>
 
 </body>
