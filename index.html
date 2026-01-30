@@ -9,9 +9,13 @@
 
   <h1>Welcome</h1>
 
-  <input id="email" type="email" placeholder="Enter your email" />
+  <input id="email" type="email" placeholder="Email" />
   <br /><br />
-  <button id="sendLink">Send Login Link</button>
+  <input id="password" type="password" placeholder="Password" />
+  <br /><br />
+
+  <button id="signup">Sign Up</button>
+  <button id="login">Login</button>
 
   <p id="status"></p>
 
@@ -19,10 +23,11 @@
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
     import {
       getAuth,
-      sendSignInLinkToEmail,
-      isSignInWithEmailLink,
-      signInWithEmailLink,
-      onAuthStateChanged
+      createUserWithEmailAndPassword,
+      signInWithEmailAndPassword,
+      sendEmailVerification,
+      onAuthStateChanged,
+      signOut
     } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -34,51 +39,66 @@
       appId: "1:525890814996:web:5dcca98f67a0d6fc6fd301"
     };
 
-    // 🔥 INIT FIREBASE
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
 
     const emailInput = document.getElementById("email");
+    const passwordInput = document.getElementById("password");
     const status = document.getElementById("status");
 
-    // 🔐 CONFIG FOR MAGIC LINK
-    const actionCodeSettings = {
-      url: window.location.href,   // return to this page
-      handleCodeInApp: true
-    };
-
-    // 📩 SEND MAGIC LINK
-    document.getElementById("sendLink").onclick = async () => {
+    // 🔐 SIGN UP
+    document.getElementById("signup").onclick = async () => {
       try {
-        await sendSignInLinkToEmail(
+        const userCred = await createUserWithEmailAndPassword(
           auth,
           emailInput.value,
-          actionCodeSettings
+          passwordInput.value
         );
 
-        localStorage.setItem("emailForSignIn", emailInput.value);
-        status.innerText = "Login link sent! Check your email.";
+        await sendEmailVerification(userCred.user);
+
+        status.innerText =
+          "Verification email sent. Please verify before logging in.";
+
+        // 🚫 Force logout until verified
+        await signOut(auth);
 
       } catch (err) {
         status.innerText = err.message;
       }
     };
 
-    // 🔗 HANDLE MAGIC LINK CLICK
-    if (isSignInWithEmailLink(auth, window.location.href)) {
-      const email =
-        localStorage.getItem("emailForSignIn") ||
-        window.prompt("Please provide your email for confirmation");
+    // 🔑 LOGIN
+    document.getElementById("login").onclick = async () => {
+      try {
+        const userCred = await signInWithEmailAndPassword(
+          auth,
+          emailInput.value,
+          passwordInput.value
+        );
 
-      await signInWithEmailLink(auth, email, window.location.href);
-      localStorage.removeItem("emailForSignIn");
-    }
+        if (!userCred.user.emailVerified) {
+          status.innerText =
+            "Please verify your email before logging in.";
+          await signOut(auth);
+          return;
+        }
 
-    // ✅ AUTH STATE
-    onAuthStateChanged(auth, (user) => {
-      if (user) {
-        window.location.href = "home.html";
+      } catch (err) {
+        status.innerText = err.message;
       }
+    };
+
+    // ✅ AUTH STATE CHECK
+    onAuthStateChanged(auth, (user) => {
+      if (!user) return;
+
+      if (!user.emailVerified) {
+        signOut(auth);
+        return;
+      }
+
+      window.location.href = "home.html";
     });
   </script>
 
