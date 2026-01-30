@@ -1,7 +1,38 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Home</title>
+</head>
 <body>
+
   <h1>Home</h1>
   <p>You are logged in.</p>
+  <button id="logout">Logout</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+    import { getAuth, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCHeYdFLldJujCUxnGZ8HWqtLtSwQwF5aw",
+      authDomain: "dresses-95f9a.firebaseapp.com",
+      projectId: "dresses-95f9a",
+      storageBucket: "dresses-95f9a.firebasestorage.app",
+      messagingSenderId: "525890814996",
+      appId: "1:525890814996:web:5dcca98f67a0d6fc6fd301"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    document.getElementById("logout").onclick = async () => {
+      await signOut(auth);
+      window.location.href = "index.html";
+    };
+  </script>
+
 </body>
 </html>
+
+
