@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dresses | Login</title>
+</head>
+<body>
+
+  <h1>Welcome</h1>
+
+  <div id="auth-ui">
+    <input id="email" type="email" placeholder="Email" />
+    <input id="password" type="password" placeholder="Password" />
+    <br /><br />
+    <button id="signup">Sign Up</button>
+    <button id="login">Login</button>
+    <br /><br />
+    <button id="google">Continue with Google</button>
+  </div>
+
+  <p id="status"></p>
+
+  <!-- Firebase Logic -->
+  <script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
+  import {
+    getAuth,
+    createUserWithEmailAndPassword,
+    signInWithEmailAndPassword,
+    GoogleAuthProvider,
+    signInWithPopup,
+    onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyCHeYdFLldJujCUxnGZ8HWqtLtSwQwF5aw",
+    authDomain: "dresses-95f9a.firebaseapp.com",
+    projectId: "dresses-95f9a",
+    storageBucket: "dresses-95f9a.firebasestorage.app",
+    messagingSenderId: "525890814996",
+    appId: "1:525890814996:web:5dcca98f67a0d6fc6fd301"
+  };
+
+  // Init Firebase
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  // DOM references (IMPORTANT)
+  const emailInput = document.getElementById("email");
+  const passwordInput = document.getElementById("password");
+  const status = document.getElementById("status");
+
+  // AUTH STATE CHECK
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      status.innerText = "Logged in. Redirecting...";
+      window.location.href = "home.html";
+    }
+  });
+
+  // SIGN UP
+  document.getElementById("signup").onclick = async () => {
+    try {
+      await createUserWithEmailAndPassword(
+        auth,
+        emailInput.value,
+        passwordInput.value
+      );
+    } catch (err) {
+      status.innerText = err.message;
+    }
+  };
+
+  // LOGIN
+  document.getElementById("login").onclick = async () => {
+    try {
+      await signInWithEmailAndPassword(
+        auth,
+        emailInput.value,
+        passwordInput.value
+      );
+    } catch (err) {
+      status.innerText = err.message;
+    }
+  };
+
+  // GOOGLE LOGIN
+  document.getElementById("google").onclick = async () => {
+    try {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    } catch (err) {
+      status.innerText = err.message;
+    }
+  };
+</script>
+
+
+</body>
+</html>
