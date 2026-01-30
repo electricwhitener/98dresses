@@ -1,129 +1,293 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>98dresses | Home</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>99dresses | Your Infinite Closet</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Great+Vibes&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-lavender: #8c6ea8;
+            --soft-green: #7ac48a;
+            --bg-light: #fcfcfc;
+            --border: #efefef;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-light);
+            margin: 0;
+            color: #444;
+        }
+
+        /* --- Header & Tab Navigation --- */
+        .main-header {
+            background: #fff;
+            border-bottom: 1px solid var(--border);
+            padding: 10px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo {
+            font-family: 'Great Vibes', cursive;
+            color: var(--primary-lavender);
+            font-size: 2rem;
+            margin: 0;
+        }
+
+        .center-nav {
+            display: flex;
+            gap: 20px;
+        }
+
+        .nav-link {
+            background: none;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            color: #666;
+            transition: all 0.3s ease;
+            border-bottom: 2px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-lavender);
+            border-bottom: 2px solid var(--primary-lavender);
+        }
+
+        /* --- Content Layout & Transitions --- */
+        .content-container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .view-section {
+            display: block;
+            opacity: 1;
+            transition: opacity 0.4s ease, transform 0.4s ease;
+            transform: translateY(0);
+        }
+
+        .hidden {
+            display: none !important;
+            opacity: 0;
+            transform: translateY(10px);
+        }
+
+        /* --- Grid & Card Aesthetics --- */
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .item-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            padding: 15px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+
+        .item-card:hover { transform: translateY(-5px); }
+
+        .image-container img {
+            max-width: 100%;
+            height: 250px;
+            object-fit: contain;
+            margin-bottom: 15px;
+        }
+
+        .item-price { color: var(--primary-lavender); font-weight: bold; }
+
+        /* --- Forms & Buttons --- */
+        .form-card, .credits-card {
+            background: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .primary-btn {
+            background: var(--soft-green);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 4px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1rem;
+        }
+    </style>
 </head>
 <body>
 
-<h2>98dresses</h2>
+    <header class="main-header">
+        <h1 class="logo">99dresses</h1>
+        <nav class="center-nav">
+            <button id="shopBtn" class="nav-link active">Shop</button>
+            <button id="addBtn" class="nav-link">Add Item</button>
+            <button id="closetBtn" class="nav-link">My Closet</button>
+            <button id="creditsBtn" class="nav-link">Credits</button>
+        </nav>
+        <button id="logout" class="nav-link">Logout</button>
+    </header>
 
-<nav>
-  <button id="shopBtn">Shop</button>
-  <button id="addBtn">Add Item</button>
-  <button id="closetBtn">My Closet</button>
-  <button id="creditsBtn">Credits</button>
-  <button id="logout">Logout</button>
-</nav>
+    <main class="content-container">
+        <section id="marketplace-view" class="view-section">
+            <h2>The Infinite Closet</h2>
+            <div id="marketplace-grid" class="item-grid"></div>
+        </section>
 
-<hr>
+        <section id="closet-view" class="view-section hidden">
+            <h2>My Closet</h2>
+            <div id="closet-grid" class="item-grid"></div>
+        </section>
 
-<div id="content"></div>
+        <section id="add-item-view" class="view-section hidden">
+            <div class="form-card">
+                <h2>Add Item</h2>
+                <input id="title" placeholder="Title">
+                <input id="credits" type="number" placeholder="Button Value">
+                <input id="image" placeholder="Image URL">
+                <button id="save" class="primary-btn">Save to Closet</button>
+            </div>
+        </section>
+
+        <section id="credits-view" class="view-section hidden">
+            <div class="credits-card">
+                <h2>Your Balance</h2>
+                <div id="credits-content"></div>
+            </div>
+        </section>
+    </main>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-auth.js";
 
-/* ---------- Firebase ---------- */
 const firebaseConfig = {
-  apiKey: "AIzaSyCHeYdFLldJujCUxnGZ8HWqtLtSwQwF5aw",
-  authDomain: "dresses-95f9a.firebaseapp.com",
-  projectId: "dresses-95f9a"
+    apiKey: "AIzaSyCHeYdFLldJujCUxnGZ8HWqtLtSwQwF5aw",
+    authDomain: "dresses-95f9a.firebaseapp.com",
+    projectId: "dresses-95f9a"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-const content = document.getElementById("content");
-
-/* ---------- TEMP DATA (OK FOR SUBMISSION) ---------- */
+// BACKEND DATA
 let myItems = [];
 let marketplace = [];
 
-/* ---------- AUTH ---------- */
+/* --- VIEW CONTROLLER (Smooth Switching) --- */
+function hideAll() {
+    document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
+    document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+}
+
+// preservation of showShop
+function showShop() {
+    hideAll();
+    document.getElementById('marketplace-view').classList.remove('hidden');
+    document.getElementById('shopBtn').classList.add('active');
+    
+    const grid = document.getElementById('marketplace-grid');
+    grid.innerHTML = marketplace.length ? "" : "<p>The closet is empty.</p>";
+    marketplace.forEach((item, i) => {
+        grid.innerHTML += `
+            <div class="item-card">
+                <div class="image-container"><img src="${item.image || 'https://via.placeholder.com/200'}" alt="dress"></div>
+                <div class="item-price">${item.credits} <span>buttons</span></div>
+                <div class="item-title">${item.title}</div>
+                <button onclick="viewItem(${i})" style="margin-top:10px; cursor:pointer">View Details</button>
+            </div>`;
+    });
+}
+
+function showCloset() {
+    hideAll();
+    document.getElementById('closet-view').classList.remove('hidden');
+    document.getElementById('closetBtn').classList.add('active');
+    
+    const grid = document.getElementById('closet-grid');
+    grid.innerHTML = myItems.length ? "" : "<p>Your closet is empty.</p>";
+    myItems.forEach((item, i) => {
+        grid.innerHTML += `
+            <div class="item-card">
+                <img src="${item.image || 'https://via.placeholder.com/200'}" height="200" style="object-fit:contain"><br>
+                <div class="item-price">${item.credits} buttons</div>
+                <strong>${item.title}</strong><br>
+                <button onclick="deleteItem(${i})" style="color:red; margin-top:10px; cursor:pointer">Remove Item</button>
+            </div>`;
+    });
+}
+
+function showAdd() {
+    hideAll();
+    document.getElementById('add-item-view').classList.remove('hidden');
+    document.getElementById('addBtn').classList.add('active');
+}
+
+function showCredits() {
+    hideAll();
+    document.getElementById('credits-view').classList.remove('hidden');
+    document.getElementById('creditsBtn').classList.add('active');
+    document.getElementById('credits-content').innerHTML = `
+        <p>Starter: 100</p>
+        <p>Earned: 25</p>
+        <p><strong>Total: 125 Buttons</strong></p>
+    `;
+}
+
+/* ---------- AUTH & NAV (PERSISTENT LOGIC) ---------- */
 onAuthStateChanged(auth, user => {
-  if (!user || !user.emailVerified) {
-    window.location.href = "index.html";
-    return;
-  }
-  showShop();
+    if (!user || !user.emailVerified) { window.location.href = "index.html"; return; }
+    showShop();
 });
 
-/* ---------- NAV ---------- */
 document.getElementById("shopBtn").onclick = showShop;
 document.getElementById("addBtn").onclick = showAdd;
 document.getElementById("closetBtn").onclick = showCloset;
 document.getElementById("creditsBtn").onclick = showCredits;
 document.getElementById("logout").onclick = async () => {
-  await signOut(auth);
-  window.location.href = "index.html";
+    await signOut(auth);
+    window.location.href = "index.html";
 };
 
-/* ---------- VIEWS ---------- */
-function showShop() {
-  content.innerHTML = "<h3>Marketplace</h3>";
-  marketplace.forEach((item, i) => {
-    content.innerHTML += `
-      <p>
-        <strong>${item.title}</strong><br>
-        ${item.image ? `<img src="${item.image}" width="120"><br>` : ""}
-        ${item.credits} credits<br>
-        <button onclick="viewItem(${i})">View</button>
-      </p>
-    `;
-  });
-}
-
-function showCloset() {
-  content.innerHTML = "<h3>My Closet</h3>";
-  myItems.forEach((item, i) => {
-    content.innerHTML += `
-      <p>
-        <strong>${item.title}</strong><br>
-        ${item.image ? `<img src="${item.image}" width="120"><br>` : ""}
-        ${item.credits} credits<br>
-        <button onclick="deleteItem(${i})">Delete</button>
-      </p>
-    `;
-  });
-}
-
-function showAdd() {
-  content.innerHTML = `
-    <h3>Add Item</h3>
-    <input id="title" placeholder="Title"><br>
-    <input id="credits" type="number" placeholder="Credits"><br>
-    <input id="image" placeholder="Image URL"><br><br>
-    <button id="save">Save</button>
-  `;
-  document.getElementById("save").onclick = () => {
+document.getElementById("save").onclick = () => {
     const item = {
-      title: title.value,
-      credits: credits.value,
-      image: image.value
+        title: document.getElementById("title").value,
+        credits: document.getElementById("credits").value,
+        image: document.getElementById("image").value
     };
     myItems.push(item);
     marketplace.push(item);
     showCloset();
-  };
-}
+};
 
-function showCredits() {
-  content.innerHTML = `
-    <h3>Credits</h3>
-    <p>Starter: 100</p>
-    <p>Earned: 25</p>
-    <p><strong>Total: 125</strong></p>
-  `;
-}
-
-/* ---------- GLOBAL FUNCTIONS FOR BUTTONS ---------- */
-window.viewItem = i => alert("Item preview page next");
+window.viewItem = i => alert("Item previewing...");
 window.deleteItem = i => {
-  myItems.splice(i, 1);
-  showCloset();
+    myItems.splice(i, 1);
+    showCloset();
 };
 </script>
-
 </body>
 </html>
