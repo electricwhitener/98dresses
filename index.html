@@ -3,21 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dresses | Login</title>
+  <title>99dresses | Your Infinite Closet</title>
+  <link rel="stylesheet" href="login.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Great+Vibes&display=swap" rel="stylesheet">
 </head>
 <body>
 
-  <h1>Welcome</h1>
+  <main class="auth-container">
+        <div class="login-card">
+            <header class="card-header">
+                <h1 class="logo">99dresses</h1>
+                <p class="tagline">Welcome back to your infinite closet</p>
+            </header>
 
-  <input id="email" type="email" placeholder="Email" />
-  <br /><br />
-  <input id="password" type="password" placeholder="Password" />
-  <br /><br />
+            <nav class="auth-tabs">
+                <button type="button" class="tab-btn active" onclick="switchTab('login')">Login</button>
+                <button type="button" class="tab-btn" onclick="switchTab('signup')">Sign Up</button>
+                <div class="tab-indicator"></div>
+            </nav>
 
-  <button id="signup">Sign Up</button>
-  <button id="login">Login</button>
+            
+            <div class="auth-form">
+                <div class="input-group">
+                    <input type="email" id="email" required placeholder=" ">
+                    <label for="email">Email Address</label>
+                </div>
 
-  <p id="status"></p>
+                <div class="input-group">
+                    <input type="password" id="password" required placeholder=" ">
+                    <label for="password">Password</label>
+                </div>
+
+                <div class="form-actions">
+                    <button id="login" class="primary-btn">Login</button>
+                    <button id="signup" class="primary-btn hidden">Sign Up</button>
+                    <a href="#" class="forgot-link">Forgot password?</a>
+                </div>
+            </div>
+
+            <div id="status"></div>
+        </div>
+    </main>
+
+  
+
+  
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
@@ -101,6 +131,30 @@
       window.location.href = "home.html";
     });
   </script>
+
+  <script>
+        // Tab Switching Logic (UI Only)
+        function switchTab(mode) {
+            const loginBtn = document.getElementById('login');
+            const signupBtn = document.getElementById('signup');
+            const tabs = document.querySelectorAll('.tab-btn');
+            const indicator = document.querySelector('.tab-indicator');
+
+            if (mode === 'signup') {
+                loginBtn.classList.add('hidden');
+                signupBtn.classList.remove('hidden');
+                tabs[1].classList.add('active');
+                tabs[0].classList.remove('active');
+                indicator.style.transform = 'translateX(100%)';
+            } else {
+                signupBtn.classList.add('hidden');
+                loginBtn.classList.remove('hidden');
+                tabs[0].classList.add('active');
+                tabs[1].classList.remove('active');
+                indicator.style.transform = 'translateX(0)';
+            }
+        }
+    </script>
 
 </body>
 </html>
