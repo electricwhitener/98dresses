@@ -4,178 +4,175 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>99dresses | Your Infinite Closet</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Great+Vibes&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Great+Vibes&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary-lavender: #8c6ea8;
-            --soft-green: #7ac48a;
-            --bg-light: #fcfcfc;
-            --border: #efefef;
+            --light-lavender: #f4f1f7;
+            --accent-purple: #6b4f84;
+            --bg-white: #ffffff;
+            --text-dark: #2d2d2d;
+            --text-muted: #757575;
+            --border-soft: #edeaf2;
+            --ease: cubic-bezier(0.25, 1, 0.5, 1);
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-light);
-            margin: 0;
-            color: #444;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background-color: #fbfaff; color: var(--text-dark); overflow-x: hidden; }
 
-        /* --- Header & Tab Navigation --- */
+        /* --- Nearer Header Design --- */
         .main-header {
-            background: #fff;
-            border-bottom: 1px solid var(--border);
-            padding: 10px 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-soft);
+            position: sticky; top: 0; z-index: 1000;
+            display: flex; justify-content: center;
+            padding: 0 20px; height: 80px;
+        }
+
+        .header-inner {
+            width: 100%;
+            max-width: 900px; /* Constrained to pull logo and nav together */
+            display: flex; justify-content: space-between; align-items: center;
         }
 
         .logo {
             font-family: 'Great Vibes', cursive;
             color: var(--primary-lavender);
-            font-size: 2rem;
-            margin: 0;
+            font-size: 2.2rem; font-weight: 400;
+            transition: transform 0.3s var(--ease);
+            cursor: pointer;
         }
 
-        .center-nav {
-            display: flex;
-            gap: 20px;
-        }
+        .center-nav { display: flex; gap: 10px; }
 
         .nav-link {
-            background: none;
-            border: none;
-            padding: 10px 15px;
-            cursor: pointer;
-            font-size: 0.95rem;
-            color: #666;
-            transition: all 0.3s ease;
-            border-bottom: 2px solid transparent;
+            background: transparent; border: none;
+            padding: 8px 16px; font-size: 0.9rem; font-weight: 500;
+            color: var(--text-muted); cursor: pointer;
+            border-radius: 20px; transition: all 0.3s var(--ease);
         }
 
-        .nav-link:hover, .nav-link.active {
-            color: var(--primary-lavender);
-            border-bottom: 2px solid var(--primary-lavender);
-        }
+        .nav-link:hover { color: var(--primary-lavender); background: var(--light-lavender); }
+        .nav-link.active { color: white; background: var(--primary-lavender); }
 
-        /* --- Content Layout & Transitions --- */
-        .content-container {
-            max-width: 1100px;
-            margin: 40px auto;
-            padding: 0 20px;
-        }
+        /* --- Layout --- */
+        .content-container { max-width: 900px; margin: 40px auto; padding: 0 20px; }
+        .view-section { animation: reveal 0.6s var(--ease) forwards; }
+        @keyframes reveal { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .hidden { display: none !important; }
 
-        .view-section {
-            display: block;
-            opacity: 1;
-            transition: opacity 0.4s ease, transform 0.4s ease;
-            transform: translateY(0);
-        }
-
-        .hidden {
-            display: none !important;
-            opacity: 0;
-            transform: translateY(10px);
-        }
-
-        /* --- Grid & Card Aesthetics --- */
-        .item-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 30px;
-            margin-top: 20px;
-        }
-
+        /* --- Item Grid --- */
+        .item-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 25px; }
         .item-card {
-            background: #fff;
-            border: 1px solid var(--border);
-            padding: 15px;
-            text-align: center;
-            transition: transform 0.3s ease;
+            background: var(--bg-white); border-radius: 16px; border: 1px solid var(--border-soft);
+            padding: 15px; text-align: center; transition: all 0.4s var(--ease);
         }
+        .item-card:hover { transform: translateY(-8px); box-shadow: 0 15px 30px rgba(140, 110, 168, 0.1); }
+        .image-container img { width: 100%; height: 260px; object-fit: contain; margin-bottom: 15px; }
 
-        .item-card:hover { transform: translateY(-5px); }
-
-        .image-container img {
-            max-width: 100%;
-            height: 250px;
-            object-fit: contain;
-            margin-bottom: 15px;
+        /* --- Better Add Item UI --- */
+        .form-card {
+            background: white; padding: 40px; border-radius: 24px;
+            border: 1px solid var(--border-soft); max-width: 500px; margin: 0 auto;
+            box-shadow: 0 10px 40px rgba(140, 110, 168, 0.05);
         }
-
-        .item-price { color: var(--primary-lavender); font-weight: bold; }
-
-        /* --- Forms & Buttons --- */
-        .form-card, .credits-card {
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            border: 1px solid var(--border);
-            max-width: 500px;
-            margin: 0 auto;
-        }
-
+        .form-card h2 { font-weight: 300; margin-bottom: 30px; color: var(--primary-lavender); text-align: center; }
+        .input-group { margin-bottom: 20px; text-align: left; }
+        .input-group label { display: block; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
         input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid var(--border);
-            border-radius: 4px;
+            width: 100%; padding: 14px; border: 1px solid var(--border-soft); border-radius: 12px;
+            font-size: 1rem; background: #fdfcff; transition: all 0.3s;
         }
+        input:focus { outline: none; border-color: var(--primary-lavender); background: white; box-shadow: 0 0 0 4px rgba(140, 110, 168, 0.05); }
+        .action-btn {
+            width: 100%; padding: 16px; border: none; border-radius: 12px;
+            background: var(--primary-lavender); color: white; font-size: 1rem; font-weight: 600;
+            cursor: pointer; transition: background 0.3s; margin-top: 10px;
+        }
+        .action-btn:hover { background: var(--accent-purple); }
 
-        .primary-btn {
-            background: var(--soft-green);
-            color: white;
-            border: none;
-            padding: 12px 25px;
-            border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
-            font-size: 1rem;
+        /* --- Better Credits UI (Wallet Style) --- */
+        .credits-card {
+            background: linear-gradient(135deg, #8c6ea8 0%, #6b4f84 100%);
+            padding: 40px; border-radius: 24px; color: white; max-width: 450px; margin: 0 auto;
+            position: relative; overflow: hidden; box-shadow: 0 20px 40px rgba(107, 79, 132, 0.2);
+        }
+        .credits-card::after {
+            content: ''; position: absolute; top: -50px; right: -50px; width: 150px; height: 150px;
+            background: rgba(255,255,255,0.1); border-radius: 50%;
+        }
+        .credits-header { font-size: 0.9rem; opacity: 0.8; text-transform: uppercase; letter-spacing: 2px; }
+        .credits-balance { font-size: 3.5rem; font-weight: 300; margin: 10px 0; }
+        .credits-footer { display: flex; justify-content: space-between; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 20px; margin-top: 20px; }
+        .stat-label { font-size: 0.75rem; opacity: 0.7; display: block; }
+        .stat-value { font-size: 1.1rem; font-weight: 500; }
+
+        /* --- Mobile --- */
+        @media (max-width: 600px) {
+            .header-inner { flex-direction: column; height: auto; padding: 15px 0; gap: 10px; }
+            .nav-link { padding: 6px 12px; font-size: 0.8rem; }
+            .item-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
     <header class="main-header">
-        <h1 class="logo">99dresses</h1>
-        <nav class="center-nav">
-            <button id="shopBtn" class="nav-link active">Shop</button>
-            <button id="addBtn" class="nav-link">Add Item</button>
-            <button id="closetBtn" class="nav-link">My Closet</button>
-            <button id="creditsBtn" class="nav-link">Credits</button>
-        </nav>
-        <button id="logout" class="nav-link">Logout</button>
+        <div class="header-inner">
+            <h1 class="logo">99dresses</h1>
+            <nav class="center-nav">
+                <button id="shopBtn" class="nav-link active">Shop</button>
+                <button id="addBtn" class="nav-link">Add Item</button>
+                <button id="closetBtn" class="nav-link">My Closet</button>
+                <button id="creditsBtn" class="nav-link">Credits</button>
+            </nav>
+            <button id="logout" class="nav-link" style="color: #a389c1">Logout</button>
+        </div>
     </header>
 
     <main class="content-container">
         <section id="marketplace-view" class="view-section">
-            <h2>The Infinite Closet</h2>
             <div id="marketplace-grid" class="item-grid"></div>
         </section>
 
         <section id="closet-view" class="view-section hidden">
-            <h2>My Closet</h2>
             <div id="closet-grid" class="item-grid"></div>
         </section>
 
         <section id="add-item-view" class="view-section hidden">
             <div class="form-card">
-                <h2>Add Item</h2>
-                <input id="title" placeholder="Title">
-                <input id="credits" type="number" placeholder="Button Value">
-                <input id="image" placeholder="Image URL">
-                <button id="save" class="primary-btn">Save to Closet</button>
+                <h2>List a New Item</h2>
+                <div class="input-group">
+                    <label>Item Description</label>
+                    <input id="title" placeholder="e.g. Vintage Floral Silk Dress">
+                </div>
+                <div class="input-group">
+                    <label>Credits </label>
+                    <input id="credits" type="number" placeholder="Value in buttons">
+                </div>
+                <div class="input-group">
+                    <label>Image URL</label>
+                    <input id="image" placeholder="https://...">
+                </div>
+                <button id="save" class="action-btn">List to the Infinite Closet</button>
             </div>
         </section>
 
         <section id="credits-view" class="view-section hidden">
             <div class="credits-card">
-                <h2>Your Balance</h2>
-                <div id="credits-content"></div>
+                <span class="credits-header">Available Buttons</span>
+                <div class="credits-balance" id="total-credits-val">100</div>
+                <div class="credits-footer">
+                    <div>
+                        <span class="stat-label">Starter Balance</span>
+                        <span class="stat-value">100</span>
+                    </div>
+                    <div>
+                        <span class="stat-label">Buttons Earned</span>
+                        <span class="stat-value">0</span>
+                    </div>
+                </div>
             </div>
         </section>
     </main>
@@ -193,49 +190,42 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// BACKEND DATA
 let myItems = [];
 let marketplace = [];
 
-/* --- VIEW CONTROLLER (Smooth Switching) --- */
+/* --- View Controller --- */
 function hideAll() {
     document.querySelectorAll('.view-section').forEach(s => s.classList.add('hidden'));
     document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
 }
 
-// preservation of showShop
 function showShop() {
     hideAll();
     document.getElementById('marketplace-view').classList.remove('hidden');
     document.getElementById('shopBtn').classList.add('active');
-    
-    const grid = document.getElementById('marketplace-grid');
-    grid.innerHTML = marketplace.length ? "" : "<p>The closet is empty.</p>";
-    marketplace.forEach((item, i) => {
-        grid.innerHTML += `
-            <div class="item-card">
-                <div class="image-container"><img src="${item.image || 'https://via.placeholder.com/200'}" alt="dress"></div>
-                <div class="item-price">${item.credits} <span>buttons</span></div>
-                <div class="item-title">${item.title}</div>
-                <button onclick="viewItem(${i})" style="margin-top:10px; cursor:pointer">View Details</button>
-            </div>`;
-    });
+    renderGrid('marketplace-grid', marketplace, false);
 }
 
 function showCloset() {
     hideAll();
     document.getElementById('closet-view').classList.remove('hidden');
     document.getElementById('closetBtn').classList.add('active');
-    
-    const grid = document.getElementById('closet-grid');
-    grid.innerHTML = myItems.length ? "" : "<p>Your closet is empty.</p>";
-    myItems.forEach((item, i) => {
+    renderGrid('closet-grid', myItems, true);
+}
+
+function renderGrid(containerId, items, isCloset) {
+    const grid = document.getElementById(containerId);
+    grid.innerHTML = items.length ? "" : "<p style='text-align:center; color:#999; width:100%; margin-top:50px;'>No items here yet.</p>";
+    items.forEach((item, i) => {
         grid.innerHTML += `
             <div class="item-card">
-                <img src="${item.image || 'https://via.placeholder.com/200'}" height="200" style="object-fit:contain"><br>
-                <div class="item-price">${item.credits} buttons</div>
-                <strong>${item.title}</strong><br>
-                <button onclick="deleteItem(${i})" style="color:red; margin-top:10px; cursor:pointer">Remove Item</button>
+                <div class="image-container"><img src="${item.image || 'https://via.placeholder.com/300'}" alt="dress"></div>
+                <div style="color:var(--primary-lavender); font-weight:600;">${item.credits} Buttons</div>
+                <div style="font-size:0.9rem; margin:5px 0 15px;">${item.title}</div>
+                ${isCloset ? 
+                    `<button onclick="deleteItem(${i})" style="color:#cc6666; background:none; border:none; cursor:pointer; font-size:0.8rem">Remove</button>` : 
+                    `<button onclick="viewItem(${i})" style="color:var(--primary-lavender); background:none; border:none; cursor:pointer; font-size:0.8rem; font-weight:600">View Details</button>`
+                }
             </div>`;
     });
 }
@@ -250,14 +240,9 @@ function showCredits() {
     hideAll();
     document.getElementById('credits-view').classList.remove('hidden');
     document.getElementById('creditsBtn').classList.add('active');
-    document.getElementById('credits-content').innerHTML = `
-        <p>Starter: 100</p>
-        <p>Earned: 25</p>
-        <p><strong>Total: 125 Buttons</strong></p>
-    `;
 }
 
-/* ---------- AUTH & NAV (PERSISTENT LOGIC) ---------- */
+/* --- Keep Existing Logic Functionally Identical --- */
 onAuthStateChanged(auth, user => {
     if (!user || !user.emailVerified) { window.location.href = "index.html"; return; }
     showShop();
@@ -267,10 +252,7 @@ document.getElementById("shopBtn").onclick = showShop;
 document.getElementById("addBtn").onclick = showAdd;
 document.getElementById("closetBtn").onclick = showCloset;
 document.getElementById("creditsBtn").onclick = showCredits;
-document.getElementById("logout").onclick = async () => {
-    await signOut(auth);
-    window.location.href = "index.html";
-};
+document.getElementById("logout").onclick = async () => { await signOut(auth); window.location.href = "index.html"; };
 
 document.getElementById("save").onclick = () => {
     const item = {
@@ -278,16 +260,14 @@ document.getElementById("save").onclick = () => {
         credits: document.getElementById("credits").value,
         image: document.getElementById("image").value
     };
+    if(!item.title) return;
     myItems.push(item);
     marketplace.push(item);
     showCloset();
 };
 
-window.viewItem = i => alert("Item previewing...");
-window.deleteItem = i => {
-    myItems.splice(i, 1);
-    showCloset();
-};
+window.viewItem = i => alert("Previewing item details...");
+window.deleteItem = i => { myItems.splice(i, 1); showCloset(); };
 </script>
 </body>
 </html>
